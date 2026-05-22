@@ -12,11 +12,42 @@ jobs:
         uses: actions/checkout@v4
       - name: Start Minikube
         uses: medyagh/setup-minikube@latest
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Install & test
+        run: |
+          pip install -r requirements.txt
+          pytest -q
       - name: Build image inside Minikube
         run: |
           eval $(minikube docker-env)
-          docker build -t lithium-app-latest:latest .
+          docker build -t django-app:latest .
+      - name: Create Kubernetes manifest
+        run: |
+          mkdir -p /tmp/devops-autopilot-k8s
+          cat > /tmp/devops-autopilot-k8s/deployment.yaml <<'EOF'
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: django-app
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: django-app
+            template:
+              metadata:
+                labels:
+                  app: django-app
+              spec:
+                containers:
+                  - name: django-app
+                    image: django-app:latest
+                    imagePullPolicy: Never
+          EOF
       - name: Deploy to Minikube
         run: |
-          kubectl apply -f k8s/
-          kubectl rollout status deployment/lithium-app-latest
+          kubectl apply -f /tmp/devops-autopilot-k8s/deployment.yaml
+          kubectl rollout status deployment/lithium-app
