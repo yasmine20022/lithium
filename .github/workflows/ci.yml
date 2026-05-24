@@ -5,33 +5,49 @@ on:
   pull_request:
     branches: [main, master]
 jobs:
-  build-and-test:
+  build-test-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Start Minikube
+        uses: medyagh/setup-minikube@latest
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - name: Install dependencies
+          python-version: 3.11
+      - name: Install & test
         run: |
           pip install -r requirements.txt
-  deploy:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Minikube
-        uses: medyagh/setup-minikube@latest
-      - name: Load Docker image into Minikube
+          pytest -q
+      - name: Build image inside Minikube
         run: |
           eval $(minikube docker-env)
-          minikube image load lithium-app:latest
-      - name: Apply Kubernetes manifest
+          docker build -t django-app:latest .
+      - name: Create Kubernetes manifest
         run: |
-          [ -d k8s ] && kubectl apply -f /tmp/devops-autopilot-k8s/deployment.yaml || echo "k8s/ not found, skipping"
-      - name: Wait for deployment rollout status
+          mkdir -p /tmp/devops-autopilot-k8s
+          cat > /tmp/devops-autopilot-k8s/deployment.yaml <<'EOF'
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: django-app
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: django-app
+            template:
+              metadata:
+                labels:
+                  app: django-app
+              spec:
+                containers:
+                  - name: django-app
+                    image: django-app:latest
+                    imagePullPolicy: Never
+          EOF
+      - name: Deploy to Minikube
         run: |
-          kubectl rollout status deployment/lithium-app --timeout=60s || true
+          kubectl apply -f /tmp/devops-autopilot-k8s/deployment.yaml
+          kubectl rollout status deployment/lithium-python-django-app
