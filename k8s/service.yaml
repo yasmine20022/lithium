@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lithium
+  labels:
+    app: lithium
+spec:
+  type: NodePort
+  selector:
+    app: lithium
+  ports:
+  - port: 80
+    targetPort: 8000
+    nodePort: 30080
