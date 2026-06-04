@@ -13,7 +13,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: '3.12'
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
@@ -34,7 +34,7 @@ jobs:
       - name: Apply Kubernetes manifests if present
         run: |
           [ -d k8s ] && kubectl apply -f /tmp/devops-autopilot-k8s/deployment.yaml || echo "k8s/ not found, skipping"
-      - name: Rollout status
+      - name: Rollout status of deployment
         run: kubectl rollout status deployment/lithium --timeout=60s || true
       - name: Create Kubernetes manifest
         run: |
