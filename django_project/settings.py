@@ -204,3 +204,18 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",  # Default Django dev server
     "http://127.0.0.1:8000",  # Alternative local address
 ]
+
+
+# DevOps Autopilot: Prometheus instrumentation
+try:
+    INSTALLED_APPS = (
+        list(INSTALLED_APPS) + ['django_prometheus']
+        if 'django_prometheus' not in INSTALLED_APPS else INSTALLED_APPS
+    )
+    MIDDLEWARE = (
+        ['django_prometheus.middleware.PrometheusBeforeMiddleware']
+        + [m for m in MIDDLEWARE if 'django_prometheus' not in m]
+        + ['django_prometheus.middleware.PrometheusAfterMiddleware']
+    )
+except Exception:
+    pass
