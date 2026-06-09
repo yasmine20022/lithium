@@ -7,6 +7,7 @@ COPY pyproject.toml pyproject.toml
 RUN uv sync --frozen --no-install-project --no-dev
 COPY . /app
 RUN uv sync --frozen --no-dev
+RUN uv pip install --python /app/.venv/bin/python django-prometheus
 
 # Then, use a final image without uv
 FROM python:3.12-slim-bookworm

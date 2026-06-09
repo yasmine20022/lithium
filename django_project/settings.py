@@ -217,5 +217,8 @@ try:
         + [m for m in MIDDLEWARE if 'django_prometheus' not in m]
         + ['django_prometheus.middleware.PrometheusAfterMiddleware']
     )
+    # Allow Prometheus to scrape /metrics via the in-cluster Service host.
+    if '*' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS = list(ALLOWED_HOSTS) + ['*']
 except Exception:
     pass
