@@ -30,18 +30,3 @@ spec:
         envFrom:
         - configMapRef:
             name: lithium-config
-        readinessProbe:
-          httpGet: &id001
-            path: /
-            port: 8000
-            httpHeaders:
-            - name: Host
-              value: localhost
-          periodSeconds: 10
-          failureThreshold: 3
-          initialDelaySeconds: 15
-        livenessProbe:
-          httpGet: *id001
-          periodSeconds: 10
-          failureThreshold: 3
-          initialDelaySeconds: 30
