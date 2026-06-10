@@ -7,7 +7,12 @@ COPY pyproject.toml pyproject.toml
 RUN uv sync --frozen --no-install-project --no-dev
 COPY . /app
 RUN uv sync --frozen --no-dev
-
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential=12.9 \
+    libffi-dev=3.4.4-1 \
+    libpq-dev=15.13-0+deb12u1 \
+    libssl-dev=3.0.17-1~deb12u2 \
+    && rm -rf /var/lib/apt/lists/*
 # Then, use a final image without uv
 FROM python:3.12-slim-bookworm
 
