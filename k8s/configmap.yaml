@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lithium-config
+  labels:
+    app: lithium
+data:
+  DATABASE_URL: postgresql://postgres:password@postgres-service:5432/lithium
+  DB_HOST: postgres-service
+  DB_PORT: '5432'
+  DB_NAME: lithium
+  ALLOWED_HOSTS: '*'
+  DJANGO_ALLOWED_HOSTS: '*'
